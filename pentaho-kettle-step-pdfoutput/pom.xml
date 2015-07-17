@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>pentaho.kettle.step.plugin</groupId>
   <artifactId>pentaho-kettle-step-pdfoutput</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
+  <version>0.0.1</version>
   <name>PDF Output - Pentaho DI Step Plugin</name>
   <packaging>jar</packaging>
   <build>

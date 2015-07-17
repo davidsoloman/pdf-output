@@ -14,17 +14,22 @@ import org.eclipse.swt.layout.FormLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.pentaho.di.core.Const;
 import org.pentaho.di.core.row.RowMetaInterface;
+import org.pentaho.di.core.row.ValueMeta;
 import org.pentaho.di.i18n.BaseMessages;
 import org.pentaho.di.trans.TransMeta;
 import org.pentaho.di.trans.step.BaseStepMeta;
 import org.pentaho.di.trans.step.StepDialogInterface;
+import org.pentaho.di.ui.core.widget.ColumnInfo;
+import org.pentaho.di.ui.core.widget.TableView;
 import org.pentaho.di.ui.trans.step.BaseStepDialog;
+
 
 /**
  * This Dialog Class is a part of the PDFOutput Plugin.
@@ -41,7 +46,13 @@ public class PDFOutputDialog extends BaseStepDialog implements StepDialogInterfa
 	private PDFOutputMeta meta;
 	
 	private Text wFieldName;
-	private Text wCustomLabel;
+	private Button wFieldNameBrowse;
+	private Text wExtNameTxt;
+	private Button wFullFile;
+	private TableView wKeys;
+	//private ColumnInfo fieldColumn = null; 
+	private Button wGetFields;
+	
 	private RowMetaInterface prevFields=null;
 	
 
@@ -110,7 +121,7 @@ public class PDFOutputDialog extends BaseStepDialog implements StepDialogInterfa
 		fdStepname.right = new FormAttachment(100, 0);
 		wStepname.setLayoutData(fdStepname);
 		
-		// output field value
+		// Filename along with BROWSE button
 		Label wlValName = new Label(shell, SWT.RIGHT);
 		wlValName.setText(BaseMessages.getString(PKG,"PDFOutput.Shell.FieldName.Label"));
 		props.setLook(wlValName);
@@ -125,9 +136,104 @@ public class PDFOutputDialog extends BaseStepDialog implements StepDialogInterfa
 		wFieldName.addModifyListener(lsMod);
 		FormData fdValName = new FormData();
 		fdValName.left = new FormAttachment(middle, 0);
-		fdValName.right = new FormAttachment(100, 0);
+		fdValName.right = new FormAttachment(90, 0);
 		fdValName.top = new FormAttachment(wStepname, margin);
 		wFieldName.setLayoutData(fdValName);
+		
+		wFieldNameBrowse=new Button(shell, SWT.PUSH); //File Browse Button
+		props.setLook(wFieldNameBrowse);
+		wFieldNameBrowse.setText(BaseMessages.getString(PKG,"PDFOutput.Shell.FieldNameBrowse.Label"));
+		FormData fdValNameBrowse = new FormData();
+		fdValNameBrowse.left = new FormAttachment(wFieldName, 0);
+		fdValNameBrowse.right = new FormAttachment(100, 0);
+		fdValNameBrowse.top = new FormAttachment(wStepname, margin);
+		wFieldNameBrowse.setLayoutData(fdValNameBrowse);
+		
+		//File Extension		
+		Label wlExtName = new Label(shell, SWT.RIGHT);
+		wlExtName.setText(BaseMessages.getString(PKG,"PDFOutput.Shell.FileExtension.Label"));
+		props.setLook(wlExtName);
+		FormData fdlExtName = new FormData();
+		fdlExtName.left = new FormAttachment(0, 0);
+		fdlExtName.right = new FormAttachment(middle, -margin);
+		fdlExtName.top = new FormAttachment(wFieldNameBrowse, margin);
+		wlExtName.setLayoutData(fdlExtName);
+		
+		wExtNameTxt = new Text(shell, SWT.SINGLE | SWT.LEFT | SWT.BORDER);
+		props.setLook(wExtNameTxt);
+		wExtNameTxt.setText(BaseMessages.getString(PKG,"PDFOutput.Shell.FileExtensionFormat.Label"));
+		wExtNameTxt.addModifyListener(lsMod);
+		FormData fdExtName = new FormData();
+		fdExtName.left = new FormAttachment(middle, 0);
+		fdExtName.right = new FormAttachment(80, 0);
+		fdExtName.top = new FormAttachment(wFieldNameBrowse, margin);
+		wExtNameTxt.setLayoutData(fdExtName);
+		
+		wFullFile=new Button(shell, SWT.PUSH); //Full FileName Button
+		props.setLook(wFullFile);
+		wFullFile.setText(BaseMessages.getString(PKG,"PDFOutput.Shell.FullFileName.Label"));
+		FormData fdFullFile = new FormData();
+		fdFullFile.left = new FormAttachment(wExtNameTxt, 0);
+		fdFullFile.right = new FormAttachment(100, 0);
+		fdFullFile.top = new FormAttachment(wFieldNameBrowse, margin);
+		wFullFile.setLayoutData(fdFullFile);
+		
+		
+		// Building the Field Section
+		Label wlKeys = new Label(shell, SWT.NONE);
+		wlKeys.setText(BaseMessages.getString(PKG,"PDFOutput.Shell.Keys.Label"));
+		props.setLook(wlKeys);
+		FormData fdlKeys = new FormData();
+		fdlKeys.left = new FormAttachment(0, 0);
+		//fdlKeys.right = new FormAttachment(middle, -margin);
+		fdlKeys.top = new FormAttachment(wFullFile, margin);
+		wlKeys.setLayoutData(fdlKeys);
+		
+		int keyCols=10;
+      //  int keyWidgetRows= (meta.getKeyField()!=null?meta.getKeyField().length:1);
+		int keyrows=10;
+		
+		
+		ColumnInfo[] cikeys=new ColumnInfo[keyCols];
+		cikeys[0]=new ColumnInfo(BaseMessages.getString(PKG, "PDFOutput.ColumnInfo.KeyField"),    ColumnInfo.COLUMN_TYPE_CCOMBO,  new String[]{}, false); 
+		cikeys[1]=new ColumnInfo(BaseMessages.getString(PKG, "PDFOutput.ColumnInfo.ValueField"),  ColumnInfo.COLUMN_TYPE_TEXT, false); 
+		cikeys[2]=new ColumnInfo(BaseMessages.getString(PKG, "PDFOutput.ColumnInfo.Default"),     ColumnInfo.COLUMN_TYPE_TEXT,   false); 
+		cikeys[3]=new ColumnInfo(BaseMessages.getString(PKG, "PDFOutput.ColumnInfo.Type"),        ColumnInfo.COLUMN_TYPE_CCOMBO, ValueMeta.getTypes()); 
+		cikeys[4]=new ColumnInfo(BaseMessages.getString(PKG, "PDFOutput.ColumnInfo.Format"),      ColumnInfo.COLUMN_TYPE_FORMAT, 4);
+		cikeys[5]=new ColumnInfo(BaseMessages.getString(PKG, "PDFOutput.ColumnInfo.Length"),      ColumnInfo.COLUMN_TYPE_TEXT,   false);
+        cikeys[6]=new ColumnInfo(BaseMessages.getString(PKG, "PDFOutput.ColumnInfo.Precision"),   ColumnInfo.COLUMN_TYPE_TEXT,   false);
+        cikeys[7]=new ColumnInfo(BaseMessages.getString(PKG, "PDFOutput.ColumnInfo.Currency"),    ColumnInfo.COLUMN_TYPE_TEXT,   false);
+        cikeys[8]=new ColumnInfo(BaseMessages.getString(PKG, "PDFOutput.ColumnInfo.Decimal"),     ColumnInfo.COLUMN_TYPE_TEXT,   false);
+        cikeys[9]=new ColumnInfo(BaseMessages.getString(PKG, "PDFOutput.ColumnInfo.Group"),       ColumnInfo.COLUMN_TYPE_TEXT,   false);
+         
+      //  fieldColumn=cikeys[0];
+         
+        wKeys=new TableView(transMeta, shell, 
+                              SWT.BORDER | SWT.FULL_SELECTION | SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL, 
+                              cikeys, 
+                              keyrows,  
+                              lsMod,
+                              props
+                              );
+ 
+        FormData fdReturn=new FormData();
+        fdReturn.left  = new FormAttachment(0, 0);
+        fdReturn.top   = new FormAttachment(wlKeys, margin);
+        fdReturn.right = new FormAttachment(100, 0);
+        fdReturn.bottom= new FormAttachment(100, -50);
+        wKeys.setLayoutData(fdReturn); 
+		
+      //Get Fields Button
+        wGetFields=new Button(shell, SWT.PUSH); 
+		props.setLook(wGetFields);
+		wGetFields.setText(BaseMessages.getString(PKG,"PDFOutput.Shell.GetFields.Label"));
+		FormData fdGetFields = new FormData();
+		//fdGetFields.left = new FormAttachment(middle, 0);
+		fdGetFields.right = new FormAttachment(middle, 0);
+		fdGetFields.top = new FormAttachment(wKeys, margin);
+		wGetFields.setLayoutData(fdGetFields);
+		
+		
 		
 		// OK and cancel buttons
 		wOK = new Button(shell, SWT.PUSH);
@@ -136,7 +242,7 @@ public class PDFOutputDialog extends BaseStepDialog implements StepDialogInterfa
 		wCancel.setText(BaseMessages.getString(PKG, "System.Button.Cancel"));
 
 		BaseStepDialog.positionBottomButtons(shell,
-				new Button[] { wOK, wCancel }, margin, wCustomLabel);
+				new Button[] { wOK, wCancel }, margin, wGetFields);
 
 		// Add listeners for cancel and OK
 		lsCancel = new Listener() {
@@ -163,6 +269,25 @@ public class PDFOutputDialog extends BaseStepDialog implements StepDialogInterfa
 		
 		wStepname.addSelectionListener(lsDef);
 		wFieldName.addSelectionListener(lsDef);
+		
+		
+		
+		/*
+		 * Listener for BROWSE Button
+		 */
+		wFieldNameBrowse.addListener(SWT.Selection, new Listener(){
+	      
+			public void handleEvent(Event arg0) {
+				// TODO Auto-generated method stub
+				 FileDialog dialog = new FileDialog(shell);
+
+		         String filePath = dialog.open();
+
+		         if(filePath != null)
+		        	 wFieldName.setText(filePath);
+				
+			}
+	    });
 		
 		
 		// Detect X or ALT-F4 or something that kills this window and cancel the
