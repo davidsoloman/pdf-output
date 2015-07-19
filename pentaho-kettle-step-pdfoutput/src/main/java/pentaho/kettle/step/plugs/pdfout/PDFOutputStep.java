@@ -1,7 +1,6 @@
 package pentaho.kettle.step.plugs.pdfout;
 
 import org.pentaho.di.core.exception.KettleException;
-import org.pentaho.di.core.row.RowDataUtil;
 import org.pentaho.di.trans.Trans;
 import org.pentaho.di.trans.TransMeta;
 import org.pentaho.di.trans.step.BaseStep;
@@ -66,19 +65,20 @@ public class PDFOutputStep extends BaseStep implements StepInterface {
 			
 			// use meta.getFields() to change it, so it reflects the output row
 			// structure
-			meta.getFields(data.outputRowMeta, getStepname(), null, null, this);
+			//meta.getFields(data.outputRowMeta, getStepname(), null, null, this);
 			
 			
 		}
 		
+		PDFOutputGenerate genpdfobj=new PDFOutputGenerate();
+		genpdfobj.generatePDF(meta.getOutputFileName());
 		
 		// safely add the output at the end of the output row
 		// the row array will be resized if necessary
-		Object[] outputRow = RowDataUtil.addValueData(r,
-				data.outputRowMeta.size() - 1, 2);
+		//Object[] outputRow = RowDataUtil.addValueData(r,data.outputRowMeta.size() - 1, 2);
 
-		// put the row to the output row stream
-		putRow(data.outputRowMeta, outputRow);
+		//put the row to the output row stream
+		//putRow(data.outputRowMeta, outputRow);
 		
 		// log progress if it is time to to so
 		if (checkFeedback(getLinesRead())) {

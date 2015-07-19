@@ -190,14 +190,13 @@ public class PDFOutputDialog extends BaseStepDialog implements StepDialogInterfa
 		wlKeys.setLayoutData(fdlKeys);
 		
 		int keyCols=10;
-      //  int keyWidgetRows= (meta.getKeyField()!=null?meta.getKeyField().length:1);
-		int keyrows=10;
-		
-		
+        int keyrows= (meta.getKeyField()!=null?meta.getKeyField().length:1);
+        
+        
 		ColumnInfo[] cikeys=new ColumnInfo[keyCols];
 		cikeys[0]=new ColumnInfo(BaseMessages.getString(PKG, "PDFOutput.ColumnInfo.KeyField"),    ColumnInfo.COLUMN_TYPE_CCOMBO,  new String[]{}, false); 
 		cikeys[1]=new ColumnInfo(BaseMessages.getString(PKG, "PDFOutput.ColumnInfo.ValueField"),  ColumnInfo.COLUMN_TYPE_TEXT, false); 
-		cikeys[2]=new ColumnInfo(BaseMessages.getString(PKG, "PDFOutput.ColumnInfo.Default"),     ColumnInfo.COLUMN_TYPE_TEXT,   false); 
+		cikeys[2]=new ColumnInfo(BaseMessages.getString(PKG, "PDFOutput.ColumnInfo.DefaultField"),     ColumnInfo.COLUMN_TYPE_TEXT,   false); 
 		cikeys[3]=new ColumnInfo(BaseMessages.getString(PKG, "PDFOutput.ColumnInfo.Type"),        ColumnInfo.COLUMN_TYPE_CCOMBO, ValueMeta.getTypes()); 
 		cikeys[4]=new ColumnInfo(BaseMessages.getString(PKG, "PDFOutput.ColumnInfo.Format"),      ColumnInfo.COLUMN_TYPE_FORMAT, 4);
 		cikeys[5]=new ColumnInfo(BaseMessages.getString(PKG, "PDFOutput.ColumnInfo.Length"),      ColumnInfo.COLUMN_TYPE_TEXT,   false);
@@ -206,8 +205,8 @@ public class PDFOutputDialog extends BaseStepDialog implements StepDialogInterfa
         cikeys[8]=new ColumnInfo(BaseMessages.getString(PKG, "PDFOutput.ColumnInfo.Decimal"),     ColumnInfo.COLUMN_TYPE_TEXT,   false);
         cikeys[9]=new ColumnInfo(BaseMessages.getString(PKG, "PDFOutput.ColumnInfo.Group"),       ColumnInfo.COLUMN_TYPE_TEXT,   false);
          
-      //  fieldColumn=cikeys[0];
-         
+        //fieldColumn=cikeys[0];
+        
         wKeys=new TableView(transMeta, shell, 
                               SWT.BORDER | SWT.FULL_SELECTION | SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL, 
                               cikeys, 
@@ -223,7 +222,7 @@ public class PDFOutputDialog extends BaseStepDialog implements StepDialogInterfa
         fdReturn.bottom= new FormAttachment(100, -50);
         wKeys.setLayoutData(fdReturn); 
 		
-      //Get Fields Button
+        //Get Fields Button
         wGetFields=new Button(shell, SWT.PUSH); 
 		props.setLook(wGetFields);
 		wGetFields.setText(BaseMessages.getString(PKG,"PDFOutput.Shell.GetFields.Label"));
@@ -339,7 +338,10 @@ public class PDFOutputDialog extends BaseStepDialog implements StepDialogInterfa
 	private void populateDialog() {
 		wStepname.selectAll();
 
-				
+		if(meta.getOutputFileName()!=null){
+			wFieldName.setText(meta.getOutputFileName());
+		}
+		
 	}
 
 	
@@ -367,7 +369,7 @@ public class PDFOutputDialog extends BaseStepDialog implements StepDialogInterfa
 		stepname = wStepname.getText();
 	
 		// Setting the settings to the meta object
-		meta.setOutputField(wFieldName.getText());
+		meta.setOutputFileName(wFieldName.getText());
 	
 		// close the SWT dialog window
 		dispose();
