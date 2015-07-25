@@ -12,7 +12,6 @@ import org.pentaho.di.core.exception.KettleException;
 import org.pentaho.di.core.exception.KettleValueException;
 import org.pentaho.di.core.exception.KettleXMLException;
 import org.pentaho.di.core.row.RowMetaInterface;
-import org.pentaho.di.core.variables.VariableSpace;
 import org.pentaho.di.core.xml.XMLHandler;
 import org.pentaho.di.i18n.BaseMessages;
 import org.pentaho.di.repository.ObjectId;
@@ -171,35 +170,8 @@ public class PDFOutputMeta extends BaseStepMeta implements StepMetaInterface {
 	}
 
 	
-	//@SuppressWarnings("deprecation")
-	@Override
-	public void getFields(RowMetaInterface r, String origin,
-			RowMetaInterface[] info, StepMeta nextStep, VariableSpace space) {
-
-		/*
-		 * This implementation appends the outputField to the row-stream
-		 
-
-		// a value meta object contains the meta data for a field
-		ValueMetaInterface v = new ValueMeta();
-
-		// set the name of the new field
-		v.setName(OutputFileName);		
-		
-		// type is going to be string
-		v.setType(ValueMetaInterface.TYPE_STRING);
-		
-
-		// setting trim type to "both"
-		v.setTrimType(ValueMetaInterface.TRIM_TYPE_BOTH);
-
-		// the name of the step that adds this field
-		v.setOrigin(origin);
-
-		// modify the row structure and add the field this step generates
-		r.addValueMeta(v);*/
-
-	}
+	
+	
 
 	@Override
 	public void check(List<CheckResultInterface> remarks, TransMeta transmeta,

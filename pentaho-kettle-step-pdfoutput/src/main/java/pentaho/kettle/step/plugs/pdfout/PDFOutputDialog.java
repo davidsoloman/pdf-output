@@ -1,7 +1,12 @@
 package pentaho.kettle.step.plugs.pdfout;
 
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.CTabFolder;
+import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -12,22 +17,29 @@ import org.eclipse.swt.layout.FormAttachment;
 import org.eclipse.swt.layout.FormData;
 import org.eclipse.swt.layout.FormLayout;
 import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.pentaho.di.core.Const;
+import org.pentaho.di.core.Props;
+import org.pentaho.di.core.exception.KettleStepException;
+import org.pentaho.di.core.row.RowMeta;
 import org.pentaho.di.core.row.RowMetaInterface;
 import org.pentaho.di.core.row.ValueMeta;
 import org.pentaho.di.i18n.BaseMessages;
 import org.pentaho.di.trans.TransMeta;
 import org.pentaho.di.trans.step.BaseStepMeta;
 import org.pentaho.di.trans.step.StepDialogInterface;
+import org.pentaho.di.ui.core.dialog.EnterSelectionDialog;
 import org.pentaho.di.ui.core.widget.ColumnInfo;
 import org.pentaho.di.ui.core.widget.TableView;
+import org.pentaho.di.ui.core.widget.TextVar;
 import org.pentaho.di.ui.trans.step.BaseStepDialog;
 
 
@@ -45,13 +57,19 @@ public class PDFOutputDialog extends BaseStepDialog implements StepDialogInterfa
 
 	private PDFOutputMeta meta;
 	
-	private Text wFieldName;
+	private CTabFolder wTabFolder;
+	private CTabItem wFileTab, wFieldsTab;
+
+	private TextVar wFieldName;
 	private Button wFieldNameBrowse;
-	private Text wExtNameTxt;
+	//private Text wExtNameTxt;
 	private Button wFullFile;
 	private TableView wKeys;
-	//private ColumnInfo fieldColumn = null; 
+	ColumnInfo fieldColumn=null; 
+	private ColumnInfo[] cikeys;
 	private Button wGetFields;
+	
+	private Map<String, Integer> prevField;
 	
 	private RowMetaInterface prevFields=null;
 	
@@ -121,36 +139,80 @@ public class PDFOutputDialog extends BaseStepDialog implements StepDialogInterfa
 		fdStepname.right = new FormAttachment(100, 0);
 		wStepname.setLayoutData(fdStepname);
 		
+		
+		wTabFolder = new CTabFolder(shell, SWT.BORDER);
+ 		props.setLook(wTabFolder, Props.WIDGET_STYLE_TAB);
+ 		wTabFolder.setSimple(false);
+		
+		/*
+		 * ----------- START OF THE FILE TAB -----------------------
+		 */
+ 		wFileTab=new CTabItem(wTabFolder, SWT.NONE);
+		wFileTab.setText(BaseMessages.getString(PKG, "PDFOutput.Shell.FileTab"));
+		
+		Composite wFileComp = new Composite(wTabFolder, SWT.NONE);
+ 		props.setLook(wFileComp);
+
+		FormLayout fileLayout = new FormLayout();
+		fileLayout.marginWidth  = 3;
+		fileLayout.marginHeight = 3;
+		wFileComp.setLayout(fileLayout);
+		
+		
 		// Filename along with BROWSE button
-		Label wlValName = new Label(shell, SWT.RIGHT);
+		Label wlValName = new Label(wFileComp, SWT.RIGHT);
 		wlValName.setText(BaseMessages.getString(PKG,"PDFOutput.Shell.FieldName.Label"));
 		props.setLook(wlValName);
 		FormData fdlValName = new FormData();
 		fdlValName.left = new FormAttachment(0, 0);
-		fdlValName.right = new FormAttachment(middle, -margin);
-		fdlValName.top = new FormAttachment(wStepname, margin);
+		fdlValName.top  = new FormAttachment(0, margin);
+		fdlValName.right= new FormAttachment(middle, -margin);
 		wlValName.setLayoutData(fdlValName);
 
-		wFieldName = new Text(shell, SWT.SINGLE | SWT.LEFT | SWT.BORDER);
+		wFieldNameBrowse=new Button(wFileComp, SWT.PUSH |  SWT.CENTER); //File Browse Button
+		props.setLook(wFieldNameBrowse);
+		wFieldNameBrowse.setText(BaseMessages.getString(PKG,"PDFOutput.Shell.FieldNameBrowse.Label"));
+		FormData fdValNameBrowse = new FormData();
+		fdValNameBrowse.right= new FormAttachment(100, 0);
+		fdValNameBrowse.top  = new FormAttachment(0, 0);
+		wFieldNameBrowse.setLayoutData(fdValNameBrowse);
+		
+		wFieldNameBrowse.addListener(SWT.Selection, new Listener(){ //Listener for Browse Button
+		      
+			public void handleEvent(Event arg0) {
+				 FileDialog dialog = new FileDialog(shell);
+				 dialog.setFilterExtensions(new String[] { "*.pdf","*" });
+				 
+				 dialog.setFilterNames(new String[] {BaseMessages.getString(PKG, "PDFOutput.Shell.FileTypeExt"),BaseMessages.getString(PKG, "System.FileType.AllFiles")});
+
+		         String filePath = dialog.open();
+
+		         if(filePath != null){
+		         	 dialog.setFileName(transMeta.environmentSubstitute(filePath));
+		         }
+		         
+		         if(dialog.open()!=null){
+		        	 
+		        	 wFieldName.setText(dialog.getFilterPath()+System.getProperty("file.separator")+dialog.getFileName()+".pdf");
+		        	 
+		         }
+				meta.setOutputFileName(wFieldName.getText()); //change once the test is over
+			}
+	    });
+		
+		wFieldName = new TextVar(transMeta,wFileComp, SWT.SINGLE | SWT.LEFT | SWT.BORDER);
 		props.setLook(wFieldName);
 		wFieldName.addModifyListener(lsMod);
 		FormData fdValName = new FormData();
 		fdValName.left = new FormAttachment(middle, 0);
-		fdValName.right = new FormAttachment(90, 0);
-		fdValName.top = new FormAttachment(wStepname, margin);
+		fdValName.top  = new FormAttachment(0, margin);
+		fdValName.right= new FormAttachment(wFieldNameBrowse, -margin);
 		wFieldName.setLayoutData(fdValName);
 		
-		wFieldNameBrowse=new Button(shell, SWT.PUSH); //File Browse Button
-		props.setLook(wFieldNameBrowse);
-		wFieldNameBrowse.setText(BaseMessages.getString(PKG,"PDFOutput.Shell.FieldNameBrowse.Label"));
-		FormData fdValNameBrowse = new FormData();
-		fdValNameBrowse.left = new FormAttachment(wFieldName, 0);
-		fdValNameBrowse.right = new FormAttachment(100, 0);
-		fdValNameBrowse.top = new FormAttachment(wStepname, margin);
-		wFieldNameBrowse.setLayoutData(fdValNameBrowse);
 		
-		//File Extension		
-		Label wlExtName = new Label(shell, SWT.RIGHT);
+		
+		/*File Extension		
+		Label wlExtName = new Label(wFileComp, SWT.RIGHT);
 		wlExtName.setText(BaseMessages.getString(PKG,"PDFOutput.Shell.FileExtension.Label"));
 		props.setLook(wlExtName);
 		FormData fdlExtName = new FormData();
@@ -159,7 +221,7 @@ public class PDFOutputDialog extends BaseStepDialog implements StepDialogInterfa
 		fdlExtName.top = new FormAttachment(wFieldNameBrowse, margin);
 		wlExtName.setLayoutData(fdlExtName);
 		
-		wExtNameTxt = new Text(shell, SWT.SINGLE | SWT.LEFT | SWT.BORDER);
+		wExtNameTxt = new Text(wFileComp, SWT.SINGLE | SWT.LEFT | SWT.BORDER);
 		props.setLook(wExtNameTxt);
 		wExtNameTxt.setText(BaseMessages.getString(PKG,"PDFOutput.Shell.FileExtensionFormat.Label"));
 		wExtNameTxt.addModifyListener(lsMod);
@@ -167,33 +229,85 @@ public class PDFOutputDialog extends BaseStepDialog implements StepDialogInterfa
 		fdExtName.left = new FormAttachment(middle, 0);
 		fdExtName.right = new FormAttachment(80, 0);
 		fdExtName.top = new FormAttachment(wFieldNameBrowse, margin);
-		wExtNameTxt.setLayoutData(fdExtName);
+		wExtNameTxt.setLayoutData(fdExtName);*/
 		
-		wFullFile=new Button(shell, SWT.PUSH); //Full FileName Button
+		wFullFile=new Button(wFileComp, SWT.PUSH); //Full FileName Button
 		props.setLook(wFullFile);
 		wFullFile.setText(BaseMessages.getString(PKG,"PDFOutput.Shell.FullFileName.Label"));
 		FormData fdFullFile = new FormData();
-		fdFullFile.left = new FormAttachment(wExtNameTxt, 0);
-		fdFullFile.right = new FormAttachment(100, 0);
+		fdFullFile.left = new FormAttachment(middle, 0);
+		//fdFullFile.right = new FormAttachment(100, 0);
 		fdFullFile.top = new FormAttachment(wFieldNameBrowse, margin);
 		wFullFile.setLayoutData(fdFullFile);
+
+		wFullFile.addSelectionListener(new SelectionAdapter() {			
+			public void widgetSelected(SelectionEvent e) 
+			{
+				//PDFOutputMeta pdfmetaob = new PDFOutputMeta();
+				//getInfo(pdfmetaob);
+				String files[] = {meta.getOutputFileName()}; // dfmetaob.getFiles(transMeta);
+				
+				if (files!=null && files.length>0)
+				{
+					EnterSelectionDialog esd = new EnterSelectionDialog(shell, files,
+							BaseMessages.getString(PKG, "PDFOutput.Shell.FullFileName.Dialog.Title"),
+							BaseMessages.getString(PKG, "PDFOutput.Shell.FullFileName.Dialog.OutputMessage"));
+					esd.setViewOnly();
+					esd.open();
+				}
+				else
+				{
+					MessageBox mb = new MessageBox(shell, SWT.OK | SWT.ICON_ERROR );
+					mb.setMessage(BaseMessages.getString(PKG, "PDFOutput.Shell.FullFileName.Dialog.NoFileFound"));
+					mb.setText(BaseMessages.getString(PKG, "System.Dialog.Error.Title"));
+					mb.open(); 
+				}
+			}
+			
+		});
 		
 		
-		// Building the Field Section
-		Label wlKeys = new Label(shell, SWT.NONE);
-		wlKeys.setText(BaseMessages.getString(PKG,"PDFOutput.Shell.Keys.Label"));
-		props.setLook(wlKeys);
-		FormData fdlKeys = new FormData();
-		fdlKeys.left = new FormAttachment(0, 0);
-		//fdlKeys.right = new FormAttachment(middle, -margin);
-		fdlKeys.top = new FormAttachment(wFullFile, margin);
-		wlKeys.setLayoutData(fdlKeys);
+		
+		FormData fdFileComp=new FormData();
+		fdFileComp.left  = new FormAttachment(0, 0);
+		fdFileComp.top   = new FormAttachment(0, 0);
+		fdFileComp.right = new FormAttachment(100, 0);
+		fdFileComp.bottom= new FormAttachment(100, 0);
+		wFileComp.setLayoutData(fdFileComp);
+	
+		wFileComp.layout();
+		wFileTab.setControl(wFileComp);
+		
+		/* ----------- END OF FILE TAB ------------------------*/
+		
+		
+		/*
+		 * ------------ START OF FIELDS TAB ----------------------
+		 */
+		
+		wFieldsTab = new CTabItem(wTabFolder, SWT.NONE);
+		wFieldsTab.setText(BaseMessages.getString(PKG, "PDFOutput.Shell.FieldTab"));
+		
+		FormLayout fieldsLayout = new FormLayout ();
+		fieldsLayout.marginWidth  = Const.FORM_MARGIN;
+		fieldsLayout.marginHeight = Const.FORM_MARGIN;
+		
+		Composite wFieldsComp = new Composite(wTabFolder, SWT.NONE);
+		wFieldsComp.setLayout(fieldsLayout);
+ 		props.setLook(wFieldsComp);
+		
+ 		//Get Fields Button
+        wGetFields=new Button(wFieldsComp, SWT.PUSH); 
+		props.setLook(wGetFields);
+		wGetFields.setText(BaseMessages.getString(PKG,"PDFOutput.Shell.GetFields.Label"));
+	
+		setButtonPositions(new Button[] { wGetFields }, margin, null);
 		
 		int keyCols=10;
         int keyrows= (meta.getKeyField()!=null?meta.getKeyField().length:1);
         
         
-		ColumnInfo[] cikeys=new ColumnInfo[keyCols];
+		cikeys=new ColumnInfo[keyCols];
 		cikeys[0]=new ColumnInfo(BaseMessages.getString(PKG, "PDFOutput.ColumnInfo.KeyField"),    ColumnInfo.COLUMN_TYPE_CCOMBO,  new String[]{}, false); 
 		cikeys[1]=new ColumnInfo(BaseMessages.getString(PKG, "PDFOutput.ColumnInfo.ValueField"),  ColumnInfo.COLUMN_TYPE_TEXT, false); 
 		cikeys[2]=new ColumnInfo(BaseMessages.getString(PKG, "PDFOutput.ColumnInfo.DefaultField"),     ColumnInfo.COLUMN_TYPE_TEXT,   false); 
@@ -205,9 +319,9 @@ public class PDFOutputDialog extends BaseStepDialog implements StepDialogInterfa
         cikeys[8]=new ColumnInfo(BaseMessages.getString(PKG, "PDFOutput.ColumnInfo.Decimal"),     ColumnInfo.COLUMN_TYPE_TEXT,   false);
         cikeys[9]=new ColumnInfo(BaseMessages.getString(PKG, "PDFOutput.ColumnInfo.Group"),       ColumnInfo.COLUMN_TYPE_TEXT,   false);
          
-        //fieldColumn=cikeys[0];
+        fieldColumn=cikeys[0];
         
-        wKeys=new TableView(transMeta, shell, 
+        wKeys=new TableView(transMeta, wFieldsComp, 
                               SWT.BORDER | SWT.FULL_SELECTION | SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL, 
                               cikeys, 
                               keyrows,  
@@ -217,43 +331,37 @@ public class PDFOutputDialog extends BaseStepDialog implements StepDialogInterfa
  
         FormData fdReturn=new FormData();
         fdReturn.left  = new FormAttachment(0, 0);
-        fdReturn.top   = new FormAttachment(wlKeys, margin);
+        fdReturn.top   = new FormAttachment(0, 0);
         fdReturn.right = new FormAttachment(100, 0);
-        fdReturn.bottom= new FormAttachment(100, -50);
+        fdReturn.bottom= new FormAttachment(wGetFields, -margin);
         wKeys.setLayoutData(fdReturn); 
 		
-        //Get Fields Button
-        wGetFields=new Button(shell, SWT.PUSH); 
-		props.setLook(wGetFields);
-		wGetFields.setText(BaseMessages.getString(PKG,"PDFOutput.Shell.GetFields.Label"));
-		FormData fdGetFields = new FormData();
-		//fdGetFields.left = new FormAttachment(middle, 0);
-		fdGetFields.right = new FormAttachment(middle, 0);
-		fdGetFields.top = new FormAttachment(wKeys, margin);
-		wGetFields.setLayoutData(fdGetFields);
+        
+        wFieldsComp.layout();
+		wFieldsTab.setControl(wFieldsComp);
+
+		FormData fdTabFolder = new FormData();
+		fdTabFolder.left  = new FormAttachment(0, 0);
+		fdTabFolder.top   = new FormAttachment(wStepname, margin);
+		fdTabFolder.right = new FormAttachment(100, 0);
+		fdTabFolder.bottom= new FormAttachment(100, -50);
+		wTabFolder.setLayoutData(fdTabFolder);
+		
+		/*------------ END OF THE FIELD TAB -----------------*/
 		
 		
-		
-		// OK and cancel buttons
+		// OK and cancel buttons and Get Fields Button
 		wOK = new Button(shell, SWT.PUSH);
 		wOK.setText(BaseMessages.getString(PKG, "System.Button.OK"));
 		wCancel = new Button(shell, SWT.PUSH);
 		wCancel.setText(BaseMessages.getString(PKG, "System.Button.Cancel"));
 
-		BaseStepDialog.positionBottomButtons(shell,
-				new Button[] { wOK, wCancel }, margin, wGetFields);
+		BaseStepDialog.positionBottomButtons(shell,new Button[] { wOK, wCancel }, margin, wTabFolder);
 
 		// Add listeners for cancel and OK
-		lsCancel = new Listener() {
-			public void handleEvent(Event e) {
-				cancel();
-			}
-		};
-		lsOK = new Listener() {
-			public void handleEvent(Event e) {
-				ok();
-			}
-		};
+		lsCancel = new Listener() {public void handleEvent(Event e) {cancel();}};
+		lsOK = new Listener() {public void handleEvent(Event e) {ok();}};
+		
 
 		wCancel.addListener(SWT.Selection, lsCancel);
 		wOK.addListener(SWT.Selection, lsOK);
@@ -271,22 +379,7 @@ public class PDFOutputDialog extends BaseStepDialog implements StepDialogInterfa
 		
 		
 		
-		/*
-		 * Listener for BROWSE Button
-		 */
-		wFieldNameBrowse.addListener(SWT.Selection, new Listener(){
-	      
-			public void handleEvent(Event arg0) {
-				// TODO Auto-generated method stub
-				 FileDialog dialog = new FileDialog(shell);
-
-		         String filePath = dialog.open();
-
-		         if(filePath != null)
-		        	 wFieldName.setText(filePath);
-				
-			}
-	    });
+		
 		
 		
 		// Detect X or ALT-F4 or something that kills this window and cancel the
@@ -298,17 +391,18 @@ public class PDFOutputDialog extends BaseStepDialog implements StepDialogInterfa
 			}
 		});
 		
-				
+			
+		wTabFolder.setSelection(0);
+		
 		// Set/Restore the dialog size based on last position on screen
 		// The setSize() method is inherited from BaseStepDialog
 		setSize();
 
+		setComboBox();
+		
 		// populate the dialog with the values from the meta object
 		populateDialog();
 		
-		//set asynchronous listing of the dropdown combo box
-		
-
 		// restore the changed flag to original value, as the modify listeners
 		// fire during dialog population
 		meta.setChanged(changed);
@@ -327,9 +421,46 @@ public class PDFOutputDialog extends BaseStepDialog implements StepDialogInterfa
 	}
 
 	
+	
+	// Setting the Combo box - asynchronously
+	private void setComboBox() {
+		Runnable fieldLoader=new Runnable() {
+			public void run() {
+				
+				try {
+					prevFields=transMeta.getPrevStepFields(stepname);
+					
+				} catch (KettleStepException e) {			
+					prevFields=new RowMeta();
+					logError("Unable to Find Input Fields");
+				}
+				
+				prevField=new HashMap<String, Integer>();
+				
+				String[] prevStepFieldsNames=prevFields.getFieldNames();
+				
+				for(int i=0;i<prevStepFieldsNames.length; i++){
+			
+					prevField.put(prevStepFieldsNames[i],Integer.valueOf(i));				
+				}
+						
+				cikeys[0].setComboValues(prevStepFieldsNames);
+				
+				//if(meta.getInputDropDataIndex()!=null){ //checking for the previously selected entry
+				//	int int_index=Integer.parseInt(meta.getInputDropDataIndex());
+				//	wInputDrop.select(int_index);
+				//}
+			}
+		};
+		new Thread(fieldLoader).run();
+		
+	}
 
 	
 	
+	
+	
+		
 	/**
 	 * populateDialog method is called when we open or re-open the dialog. 
 	 * Also displays the last selections done by the user.
