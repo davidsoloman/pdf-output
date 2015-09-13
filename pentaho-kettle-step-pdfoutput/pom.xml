@@ -62,10 +62,16 @@
 			<version>5.0.0.1</version>
 		</dependency>
 		
-		<dependency>
+		<!-- <dependency>
     		<groupId>com.itextpdf</groupId>
    			<artifactId>itextpdf</artifactId>
-  			<version>5.0.6</version>
+  			<version>5.5.6</version>
+		</dependency>-->
+		
+		<dependency>
+ 			<groupId>com.lowagie</groupId>
+  			<artifactId>itext</artifactId>
+ 			<version>2.1.7</version>
 		</dependency>
 
 	</dependencies>

@@ -65,7 +65,7 @@ public class PDFOutputDialog extends BaseStepDialog implements StepDialogInterfa
 	//private Text wExtNameTxt;
 	private Button wFullFile;
 	private TableView wKeys;
-	ColumnInfo fieldColumn=null; 
+	ColumnInfo fieldColumn=null;
 	private ColumnInfo[] cikeys;
 	private Button wGetFields;
 	
@@ -303,21 +303,21 @@ public class PDFOutputDialog extends BaseStepDialog implements StepDialogInterfa
 	
 		setButtonPositions(new Button[] { wGetFields }, margin, null);
 		
-		int keyCols=10;
+		int keyCols=4;
         int keyrows= (meta.getKeyField()!=null?meta.getKeyField().length:1);
         
         
 		cikeys=new ColumnInfo[keyCols];
 		cikeys[0]=new ColumnInfo(BaseMessages.getString(PKG, "PDFOutput.ColumnInfo.KeyField"),    ColumnInfo.COLUMN_TYPE_CCOMBO,  new String[]{}, false); 
 		cikeys[1]=new ColumnInfo(BaseMessages.getString(PKG, "PDFOutput.ColumnInfo.ValueField"),  ColumnInfo.COLUMN_TYPE_TEXT, false); 
-		cikeys[2]=new ColumnInfo(BaseMessages.getString(PKG, "PDFOutput.ColumnInfo.DefaultField"),     ColumnInfo.COLUMN_TYPE_TEXT,   false); 
-		cikeys[3]=new ColumnInfo(BaseMessages.getString(PKG, "PDFOutput.ColumnInfo.Type"),        ColumnInfo.COLUMN_TYPE_CCOMBO, ValueMeta.getTypes()); 
-		cikeys[4]=new ColumnInfo(BaseMessages.getString(PKG, "PDFOutput.ColumnInfo.Format"),      ColumnInfo.COLUMN_TYPE_FORMAT, 4);
-		cikeys[5]=new ColumnInfo(BaseMessages.getString(PKG, "PDFOutput.ColumnInfo.Length"),      ColumnInfo.COLUMN_TYPE_TEXT,   false);
-        cikeys[6]=new ColumnInfo(BaseMessages.getString(PKG, "PDFOutput.ColumnInfo.Precision"),   ColumnInfo.COLUMN_TYPE_TEXT,   false);
-        cikeys[7]=new ColumnInfo(BaseMessages.getString(PKG, "PDFOutput.ColumnInfo.Currency"),    ColumnInfo.COLUMN_TYPE_TEXT,   false);
-        cikeys[8]=new ColumnInfo(BaseMessages.getString(PKG, "PDFOutput.ColumnInfo.Decimal"),     ColumnInfo.COLUMN_TYPE_TEXT,   false);
-        cikeys[9]=new ColumnInfo(BaseMessages.getString(PKG, "PDFOutput.ColumnInfo.Group"),       ColumnInfo.COLUMN_TYPE_TEXT,   false);
+		//cikeys[2]=new ColumnInfo(BaseMessages.getString(PKG, "PDFOutput.ColumnInfo.DefaultField"),     ColumnInfo.COLUMN_TYPE_TEXT,   false); 
+		cikeys[2]=new ColumnInfo(BaseMessages.getString(PKG, "PDFOutput.ColumnInfo.Type"),        ColumnInfo.COLUMN_TYPE_CCOMBO, ValueMeta.getTypes()); 
+		cikeys[3]=new ColumnInfo(BaseMessages.getString(PKG, "PDFOutput.ColumnInfo.Format"),      ColumnInfo.COLUMN_TYPE_FORMAT, 4);
+		//cikeys[5]=new ColumnInfo(BaseMessages.getString(PKG, "PDFOutput.ColumnInfo.Length"),      ColumnInfo.COLUMN_TYPE_TEXT,   false);
+        //cikeys[6]=new ColumnInfo(BaseMessages.getString(PKG, "PDFOutput.ColumnInfo.Precision"),   ColumnInfo.COLUMN_TYPE_TEXT,   false);
+        //cikeys[7]=new ColumnInfo(BaseMessages.getString(PKG, "PDFOutput.ColumnInfo.Currency"),    ColumnInfo.COLUMN_TYPE_TEXT,   false);
+        //cikeys[8]=new ColumnInfo(BaseMessages.getString(PKG, "PDFOutput.ColumnInfo.Decimal"),     ColumnInfo.COLUMN_TYPE_TEXT,   false);
+        //cikeys[9]=new ColumnInfo(BaseMessages.getString(PKG, "PDFOutput.ColumnInfo.Group"),       ColumnInfo.COLUMN_TYPE_TEXT,   false);
          
         fieldColumn=cikeys[0];
         

@@ -1,5 +1,7 @@
 package pentaho.kettle.step.plugs.pdfout;
 
+import java.io.IOException;
+
 import org.pentaho.di.core.exception.KettleException;
 import org.pentaho.di.trans.Trans;
 import org.pentaho.di.trans.TransMeta;
@@ -50,6 +52,8 @@ public class PDFOutputStep extends BaseStep implements StepInterface {
 		// if no more rows are expected, indicate step is finished and
 		// processRow() should not be called again
 		if (r == null) {
+			
+			logBasic("No Rows Found. Please ensure a row is incoming from the prev. step");
 			setOutputDone();
 			return false;
 		}
@@ -63,16 +67,22 @@ public class PDFOutputStep extends BaseStep implements StepInterface {
 			// clone the input row structure and place it in our data object
 			data.outputRowMeta = getInputRowMeta().clone();
 			
-			// use meta.getFields() to change it, so it reflects the output row
-			// structure
-			//meta.getFields(data.outputRowMeta, getStepname(), null, null, this);
+			// use meta.getFields() to change it, so it reflects the output row structure
+			meta.getFields(data.outputRowMeta, getStepname(), null, null, this);
 			
 			
 		}
 		
-		PDFOutputGenerate genpdfobj=new PDFOutputGenerate();
-		genpdfobj.generatePDF(meta.getOutputFileName());
+		logBasic("Opening the File");
 		
+		PDFOutputGenerate genpdfobj=new PDFOutputGenerate();
+		try {
+			genpdfobj.generatePDF(meta.getOutputFileName());
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+				
 		// safely add the output at the end of the output row
 		// the row array will be resized if necessary
 		//Object[] outputRow = RowDataUtil.addValueData(r,data.outputRowMeta.size() - 1, 2);
@@ -85,6 +95,9 @@ public class PDFOutputStep extends BaseStep implements StepInterface {
 			logBasic("Linenr " + getLinesRead()); // Some basic logging
 		}
 
+		logBasic("i am done with the file ");
+		
+		
 		// indicate that processRow() should be called again
 		return true;
 	}

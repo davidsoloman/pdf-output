@@ -12,6 +12,7 @@ import org.pentaho.di.core.exception.KettleException;
 import org.pentaho.di.core.exception.KettleValueException;
 import org.pentaho.di.core.exception.KettleXMLException;
 import org.pentaho.di.core.row.RowMetaInterface;
+import org.pentaho.di.core.variables.VariableSpace;
 import org.pentaho.di.core.xml.XMLHandler;
 import org.pentaho.di.i18n.BaseMessages;
 import org.pentaho.di.repository.ObjectId;
@@ -41,14 +42,14 @@ public class PDFOutputMeta extends BaseStepMeta implements StepMetaInterface {
 	private String OutputFileName;
 	private String[] KeyField;
 	private String[] ValueField;
-	private String[] DefaultField;
+	//private String[] DefaultField;
 	private String[] Type;
 	private String[] Format;
-	private String[] Length;
-	private String[] Precision;
-	private String[] Currency;
-	private String[] Decimal;
-	private String[] Group;
+	//private String[] Length;
+	//private String[] Precision;
+	//private String[] Currency;
+	//private String[] Decimal;
+	//private String[] Group;
 	
 	
 	public PDFOutputMeta(){
@@ -83,14 +84,14 @@ public class PDFOutputMeta extends BaseStepMeta implements StepMetaInterface {
 		
 		KeyField= new String[nrkeys];
 		ValueField= new String[nrkeys];
-		DefaultField= new String[nrkeys];
+		//DefaultField= new String[nrkeys];
 		Type= new String[nrkeys];
 		Format= new String[nrkeys];
-		Length= new String[nrkeys];
-		Precision= new String[nrkeys];
-		Currency= new String[nrkeys];
-		Decimal= new String[nrkeys];
-		Group= new String[nrkeys];
+		//Length= new String[nrkeys];
+		//Precision= new String[nrkeys];
+		//Currency= new String[nrkeys];
+		//Decimal= new String[nrkeys];
+		//Group= new String[nrkeys];
 		
 	}
 
@@ -108,19 +109,31 @@ public class PDFOutputMeta extends BaseStepMeta implements StepMetaInterface {
 		{
 			retval.KeyField[i] = KeyField[i];
 			retval.ValueField[i] = ValueField[i];
-			retval.DefaultField[i] = DefaultField[i];
+			//retval.DefaultField[i] = DefaultField[i];
 			retval.Type[i] = Type[i];
 			retval.Format[i] = Format[i];
-			retval.Length[i] = Length[i];
-			retval.Precision[i] = Precision[i];
-			retval.Currency[i] = Currency[i];
-			retval.Decimal[i] = Decimal[i];
-			retval.Group[i] = Group[i];
+			//retval.Length[i] = Length[i];
+			//retval.Precision[i] = Precision[i];
+			//retval.Currency[i] = Currency[i];
+			//retval.Decimal[i] = Decimal[i];
+			//retval.Group[i] = Group[i];
 		}
 
 		return retval;
 	}
 
+
+	@Override
+	public void getFields(RowMetaInterface r, String origin,
+			RowMetaInterface[] info, StepMeta nextStep, VariableSpace space) {
+		
+		// nothing is added or modified to the row
+		
+	}
+	
+	
+	
+	
 		
 	@Override
 	public String getXML() throws KettleValueException {
@@ -239,7 +252,7 @@ public class PDFOutputMeta extends BaseStepMeta implements StepMetaInterface {
 		Format = format;
 	}
 
-	public String[] getLength() {
+	/*public String[] getLength() {
 		return Length;
 	}
 
@@ -286,7 +299,7 @@ public class PDFOutputMeta extends BaseStepMeta implements StepMetaInterface {
 	public void setDefaultField(String[] defaultField) {
 		DefaultField = defaultField;
 	}
-
+*/
 	
 	
 

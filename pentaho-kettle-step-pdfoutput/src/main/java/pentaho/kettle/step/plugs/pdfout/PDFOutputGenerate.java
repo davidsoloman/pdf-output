@@ -2,11 +2,15 @@ package pentaho.kettle.step.plugs.pdfout;
 
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 
-import com.itextpdf.text.Document;
-import com.itextpdf.text.DocumentException;
-import com.itextpdf.text.Paragraph;
-import com.itextpdf.text.pdf.PdfWriter;
+import org.pentaho.di.core.Const;
+
+import com.lowagie.text.Document;
+import com.lowagie.text.DocumentException;
+import com.lowagie.text.Paragraph;
+import com.lowagie.text.pdf.PdfWriter;
+
 
 
 /**
@@ -17,7 +21,14 @@ import com.itextpdf.text.pdf.PdfWriter;
 
 public class PDFOutputGenerate {
 	
-	public void generatePDF(String OutputFileName){
+	public void generatePDF(String OutputFileName) throws IOException{
+		
+		
+		if( Const.isWindows() )
+	    {
+	    	if( OutputFileName.startsWith("file:///") ) OutputFileName=OutputFileName.substring(8);
+	    	OutputFileName=OutputFileName.replace("\\", "\\\\");
+	    }
 		
 		Document document=new Document();
 		
@@ -44,10 +55,8 @@ public class PDFOutputGenerate {
 		writer.close();			
 		
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (DocumentException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
