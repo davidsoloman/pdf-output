@@ -1,8 +1,27 @@
+/*******************************************************************************
+ *
+ * PDF Output Writer - Pentaho Kettle Step plugin
+ *
+ * Author: Rishu Shrivastava
+ * 
+ *
+ *******************************************************************************
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ ******************************************************************************/
+
 package pentaho.kettle.step.plugs.pdfout;
-
-
-import java.util.HashMap;
-import java.util.Map;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
@@ -69,7 +88,7 @@ public class PDFOutputDialog extends BaseStepDialog implements StepDialogInterfa
 	private ColumnInfo[] cikeys;
 	private Button wGetFields;
 	
-	private Map<String, Integer> prevField;
+	//private Map<String, Integer> prevField;
 	
 	private RowMetaInterface prevFields=null;
 	
@@ -193,7 +212,7 @@ public class PDFOutputDialog extends BaseStepDialog implements StepDialogInterfa
 		         
 		         if(dialog.open()!=null){
 		        	 
-		        	 wFieldName.setText(dialog.getFilterPath()+System.getProperty("file.separator")+dialog.getFileName()+".pdf");
+		        	wFieldName.setText(dialog.getFilterPath()+System.getProperty("file.separator")+dialog.getFileName()+".pdf");
 		        	 
 		         }
 				meta.setOutputFileName(wFieldName.getText()); //change once the test is over
@@ -240,12 +259,10 @@ public class PDFOutputDialog extends BaseStepDialog implements StepDialogInterfa
 		fdFullFile.top = new FormAttachment(wFieldNameBrowse, margin);
 		wFullFile.setLayoutData(fdFullFile);
 
-		wFullFile.addSelectionListener(new SelectionAdapter() {			
+		wFullFile.addSelectionListener(new SelectionAdapter() {	// Listener for full filename button
 			public void widgetSelected(SelectionEvent e) 
 			{
-				//PDFOutputMeta pdfmetaob = new PDFOutputMeta();
-				//getInfo(pdfmetaob);
-				String files[] = {meta.getOutputFileName()}; // dfmetaob.getFiles(transMeta);
+				String files[] = {meta.getOutputFileName()};
 				
 				if (files!=null && files.length>0)
 				{
@@ -297,7 +314,7 @@ public class PDFOutputDialog extends BaseStepDialog implements StepDialogInterfa
  		props.setLook(wFieldsComp);
 		
  		//Get Fields Button
-        wGetFields=new Button(wFieldsComp, SWT.PUSH); 
+        wGetFields=new Button(wFieldsComp, SWT.PUSH);
 		props.setLook(wGetFields);
 		wGetFields.setText(BaseMessages.getString(PKG,"PDFOutput.Shell.GetFields.Label"));
 	
@@ -347,7 +364,22 @@ public class PDFOutputDialog extends BaseStepDialog implements StepDialogInterfa
 		fdTabFolder.bottom= new FormAttachment(100, -50);
 		wTabFolder.setLayoutData(fdTabFolder);
 		
+		
+		//listener for GETFIELDS Tab
+		wGetFields.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e){
+				setComboBox();
+			}
+			
+		});
+		
+		
+		
+		
+		
 		/*------------ END OF THE FIELD TAB -----------------*/
+		
+		
 		
 		
 		// OK and cancel buttons and Get Fields Button
@@ -378,10 +410,6 @@ public class PDFOutputDialog extends BaseStepDialog implements StepDialogInterfa
 		wFieldName.addSelectionListener(lsDef);
 		
 		
-		
-		
-		
-		
 		// Detect X or ALT-F4 or something that kills this window and cancel the
 		// dialog properly
 		shell.addShellListener(new ShellAdapter() {
@@ -391,8 +419,9 @@ public class PDFOutputDialog extends BaseStepDialog implements StepDialogInterfa
 			}
 		});
 		
-			
-		wTabFolder.setSelection(0);
+		
+		//select always the first tab
+		wTabFolder.setSelection(0); 
 		
 		// Set/Restore the dialog size based on last position on screen
 		// The setSize() method is inherited from BaseStepDialog
@@ -422,7 +451,9 @@ public class PDFOutputDialog extends BaseStepDialog implements StepDialogInterfa
 
 	
 	
-	// Setting the Combo box - asynchronously
+	/*
+	 * Setting up the FIELDS Tab section having the data fields from the prev. step
+	 */
 	private void setComboBox() {
 		Runnable fieldLoader=new Runnable() {
 			public void run() {
@@ -430,19 +461,21 @@ public class PDFOutputDialog extends BaseStepDialog implements StepDialogInterfa
 				try {
 					prevFields=transMeta.getPrevStepFields(stepname);
 					
-				} catch (KettleStepException e) {			
+				} catch (KettleStepException e) {		
 					prevFields=new RowMeta();
 					logError("Unable to Find Input Fields");
 				}
 				
-				prevField=new HashMap<String, Integer>();
+				//prevField=new HashMap<String, Integer>();
 				
 				String[] prevStepFieldsNames=prevFields.getFieldNames();
+				String[] prevStepFieldNamesandType=prevFields.getFieldNamesAndTypes(0);
+				logBasic("Prev Step FieldName and Type : "+prevStepFieldNamesandType[0]);
 				
-				for(int i=0;i<prevStepFieldsNames.length; i++){
-			
-					prevField.put(prevStepFieldsNames[i],Integer.valueOf(i));				
-				}
+				/*for(int i=0;i<prevStepFieldsNames.length; i++){
+					prevField.put(prevStepFieldsNames[i],Integer.valueOf(i));
+					
+				}*/
 						
 				cikeys[0].setComboValues(prevStepFieldsNames);
 				
@@ -450,15 +483,14 @@ public class PDFOutputDialog extends BaseStepDialog implements StepDialogInterfa
 				//	int int_index=Integer.parseInt(meta.getInputDropDataIndex());
 				//	wInputDrop.select(int_index);
 				//}
+				
+				
 			}
 		};
 		new Thread(fieldLoader).run();
 		
 	}
 
-	
-	
-	
 	
 		
 	/**
